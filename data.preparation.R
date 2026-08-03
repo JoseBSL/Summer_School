@@ -1,6 +1,6 @@
 ############################################################
 # Summer School: Network Analysis in R
-#Part 1: Prepare data for network analysis
+# Part 1: Prepare data for network analysis
 ############################################################
 
 # Dataset
@@ -22,11 +22,11 @@ library(tidyr)  # Data reshaping
 # ==========================================================
 # Network data
 # it uses semicolon, so we use read_csv2 instead of read_csv
-networks = read_csv2("Raw/Data/visitation.networks.csv")
+networks = read_csv2("data/raw/visitation.networks.csv")
 
 # Species names
-plant.species = read_csv2("Raw/Data/plant.species.csv")
-pollinator.species = read_csv2("Raw/Data/pollinator.species.csv")
+plant.species = read_csv2("data/raw/plant.species.csv")
+pollinator.species = read_csv2("data/raw/pollinator.species.csv")
 
 # ==========================================================
 # 3. Replace plant species IDs with species names
@@ -87,4 +87,4 @@ networks_long = networks %>%
 
 write_csv2(
   networks_long,
-  "Data/Processed/visitation.networks.long.csv")
+  "data/processed/visitation.networks.long.csv")
