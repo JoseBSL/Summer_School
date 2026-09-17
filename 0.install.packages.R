@@ -9,8 +9,7 @@ install.packages(c(
   "dplyr",
   "tidyr",
   "tibble",
-  "remotes"
-))
+  "remotes"))
 
 # Install the version of bipartite used in this practical
 remotes::install_version(

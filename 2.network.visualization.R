@@ -19,7 +19,7 @@ library(viridis) # Color scales for ggplot2
 networks_long = read_csv2("data/processed/visitation.networks.long.csv")
 
 # ==========================================================
-# 2. Prepare example network
+# 3. Prepare example network
 # ==========================================================
 # Check the available network IDs
 unique(networks_long$`Network ID`)
@@ -42,7 +42,7 @@ example_matrix = example_network %>%
   as.matrix()
 
 # ==========================================================
-# 2. Plot example network as a bipartite graph
+# 4. Plot example network as a bipartite graph
 #
 # a) Unweighted network using bipartite
 # b) Weighted network using bipartite
@@ -96,7 +96,7 @@ ggplot(example_network,
 
 
 # ==========================================================
-# 3. Plot the network as an interaction matrix
+# 5. Plot the network as an interaction matrix
 # ==========================================================
 
 # Complete the interaction matrix
