@@ -13,7 +13,7 @@ library(tidyverse)
 # 2. Load data
 # ==========================================================
 
-networks_long = read_csv2("data/processed/visitation.networks.long.csv")
+networks_long = read_csv2("Data/Processed/visitation.networks.long.csv")
 
 # ==========================================================
 # 3. Select one site and calculate number of visits

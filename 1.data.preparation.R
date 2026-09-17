@@ -22,11 +22,11 @@ library(tidyr)  # Data reshaping
 # ==========================================================
 # Network data
 # it uses semicolon, so we use read_csv2 instead of read_csv
-networks = read_csv2("data/raw/visitation.networks.csv")
+networks = read_csv2("Data/Raw/visitation.networks.csv")
 
 # Species names
-plant.species = read_csv2("data/raw/plant.species.csv")
-pollinator.species = read_csv2("data/raw/pollinator.species.csv")
+plant.species = read_csv2("Data/Raw/plant.species.csv")
+pollinator.species = read_csv2("Data/Raw/pollinator.species.csv")
 
 # ==========================================================
 # 3. Replace plant species IDs with species names
@@ -87,4 +87,4 @@ networks_long = networks %>%
 
 write_csv2(
   networks_long,
-  "data/processed/visitation.networks.long.csv")
+  "Data/Processed/visitation.networks.long.csv")

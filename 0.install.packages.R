@@ -9,7 +9,10 @@ install.packages(c(
   "dplyr",
   "tidyr",
   "tibble",
-  "remotes"))
+  "remotes",
+  "ggplot2",
+  "viridis",
+  "tidyverse"))
 
 # Install the version of bipartite used in this practical
 remotes::install_version(
