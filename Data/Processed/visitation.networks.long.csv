@@ -1,4 +1,4 @@
-Treatment;Site;Month;Network ID;Plant species ID;Floral abundance;Plant species name;Pollinator species;Number of visits
+treatment;site;month;network_id;plant_id;floral_abundance;plant_species;pollinator_species;visits
 Restored;Bernica;1;Ber_1;Dillenia ferruginea;0,0625;Dillenia ferruginea;Lasioglossum mahense;1
 Restored;Bernica;1;Ber_1;Dillenia ferruginea;0,0625;Dillenia ferruginea;near Eurycratus sp1;5
 Restored;Bernica;1;Ber_1;Dillenia ferruginea;0,0625;Dillenia ferruginea;Stenomorda near disparilis;1

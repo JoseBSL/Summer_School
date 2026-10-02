@@ -81,6 +81,19 @@ networks_long = networks %>%
   ) %>%
   filter(`Number of visits` > 0)
 
+colnames(networks_long)
+
+names(networks_long) = c(
+  "treatment",
+  "site",
+  "month",
+  "network_id",
+  "plant_id",
+  "floral_abundance",
+  "plant_species",
+  "pollinator_species",
+  "visits")
+
 # ==========================================================
 # 6. Save data
 # ==========================================================

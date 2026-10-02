@@ -1,58 +1,80 @@
 ############################################################
 # Summer School: Network Analysis in R
-# Part 2: Visualise and explore data
+# Case Study 1: Plant-pollinator networks
+# 2. Network visualization
 ############################################################
+
 
 # ==========================================================
 # 1. Load libraries
 # ==========================================================
-library(readr)  # Read CSV files
-library(dplyr)  # Data manipulation
-library(tidyr)  # Data reshaping
+
+library(readr)      # Read CSV files
+library(dplyr)      # Data manipulation
+library(tidyr)      # Data reshaping
+library(tibble)     # Data frames
 library(bipartite)  # Network analysis and visualization
-library(ggplot2) # Data visualization
-library(viridis) # Color scales for ggplot2
+library(ggplot2)    # Data visualization
+library(viridis)    # Color scales
+
+
 # ==========================================================
 # 2. Load data
 # ==========================================================
 
-networks_long = read_csv2("Data/Processed/visitation.networks.long.csv")
+networks_long = read_csv2(
+  "Data/Processed/visitation.networks.long.csv"
+)
+
+# Rename variables
+names(networks_long) = c(
+  "treatment",
+  "site",
+  "month",
+  "network_id",
+  "plant_id",
+  "floral_abundance",
+  "plant_species",
+  "pollinator_species",
+  "visits"
+)
+
 
 # ==========================================================
 # 3. Prepare example network
 # ==========================================================
+
 # Check the available network IDs
-unique(networks_long$`Network ID`)
+unique(networks_long$network_id)
 
 # Select one network as an example
 example_network = networks_long %>%
-  filter(`Network ID` == unique(`Network ID`)[1])
+  filter(network_id == unique(network_id)[1])
 
 # Convert the long-format data into an interaction matrix
 example_matrix = example_network %>%
   select(
-    `Plant species ID`,
-    `Pollinator species`,
-    `Number of visits`) %>%
+    plant_id,
+    pollinator_species,
+    visits
+  ) %>%
   pivot_wider(
-    names_from = `Pollinator species`,
-    values_from = `Number of visits`,
-    values_fill = 0) %>% 
-  tibble::column_to_rownames("Plant species ID") %>%
+    names_from = pollinator_species,
+    values_from = visits,
+    values_fill = 0
+  ) %>%
+  column_to_rownames("plant_id") %>%
   as.matrix()
 
+
 # ==========================================================
-# 4. Plot example network as a bipartite graph
-#
-# a) Unweighted network using bipartite
-# b) Weighted network using bipartite
-# c) Weighted network using ggplot2
+# 4. Plot the network as a bipartite graph
 # ==========================================================
-graphics.off()
 
 # Create an unweighted interaction matrix
-example_matrix_binary <- example_matrix
-example_matrix_binary[example_matrix_binary > 0] <- 1
+example_matrix_binary = example_matrix
+example_matrix_binary[example_matrix_binary > 0] = 1
+
 
 # Unweighted network
 plotweb(
@@ -62,10 +84,12 @@ plotweb(
   link_color = "grey70",
   link_border = "grey70",
   link_alpha = 1,
-  text_size = "auto",
-  srt = 90,
+  text_size = 0.4,
+  srt = 1,
   lab_distance = 0.01,
-  mar = c(1, 1, 1, 1))
+  mar = c(1, 1, 1, 1)
+)
+
 
 # Weighted network
 plotweb(
@@ -75,47 +99,36 @@ plotweb(
   link_color = "grey70",
   link_border = "grey70",
   link_alpha = 1,
-  text_size = "auto",
-  srt = 90,
+  text_size = 0.4,
+  srt = 1,
   lab_distance = 0.01,
-  mar = c(1, 1, 1, 1))
-
-library(ggplot2)
-
-ggplot(example_network,
-       aes(x = `Pollinator species`,
-           y = `Plant species ID`,
-           fill = `Number of visits`)) +
-  geom_tile(color = "white") +
-  scale_fill_viridis_c() +
-  theme_bw() +
-  theme(
-    axis.text.x = element_text(angle = 90, hjust = 1),
-    axis.title = element_blank()
-  )
+  mar = c(1, 1, 1, 1)
+)
 
 
 # ==========================================================
 # 5. Plot the network as an interaction matrix
 # ==========================================================
 
-# Complete the interaction matrix
-example_network_complete <- example_network %>%
+# Complete all plant-pollinator combinations
+example_network_complete = example_network %>%
   complete(
-    `Plant species ID`,
-    `Pollinator species`,
-    fill = list(`Number of visits` = 0)
+    plant_id,
+    pollinator_species,
+    fill = list(visits = 0)
   ) %>%
   mutate(
-    `Number of visits` = na_if(`Number of visits`, 0))
+    visits = na_if(visits, 0)
+  )
+
 
 # Plot the interaction matrix
 ggplot(
   example_network_complete,
   aes(
-    x = `Pollinator species`,
-    y = `Plant species ID`,
-    fill = `Number of visits`
+    x = pollinator_species,
+    y = plant_id,
+    fill = visits
   )
 ) +
   geom_tile(
@@ -137,34 +150,34 @@ ggplot(
     axis.text.x = element_text(
       angle = 90,
       hjust = 1,
-      vjust = 0.5))
-
-
-
+      vjust = 0.5
+    )
+  )
 
 
 # ==========================================================
-# c) Weighted bipartite network using ggplot2
+# 6. Plot the weighted bipartite network using ggplot2
 # ==========================================================
 
 # Order plants by their total number of visits
-plant_nodes <- example_network %>%
-  group_by(`Plant species ID`) %>%
+plant_nodes = example_network %>%
+  group_by(plant_id) %>%
   summarise(
-    total_visits = sum(`Number of visits`),
+    total_visits = sum(visits),
     .groups = "drop"
   ) %>%
   arrange(desc(total_visits)) %>%
   mutate(
-    x_plant = seq_along(`Plant species ID`),
+    x_plant = seq_along(plant_id),
     y_plant = 0
   )
 
+
 # Order pollinators by their total number of visits
-pollinator_nodes <- example_network %>%
-  group_by(`Pollinator species`) %>%
+pollinator_nodes = example_network %>%
+  group_by(pollinator_species) %>%
   summarise(
-    total_visits = sum(`Number of visits`),
+    total_visits = sum(visits),
     .groups = "drop"
   ) %>%
   arrange(desc(total_visits)) %>%
@@ -177,23 +190,29 @@ pollinator_nodes <- example_network %>%
     y_pollinator = 1
   )
 
+
 # Add node coordinates to each interaction
-network_edges <- example_network %>%
+network_edges = example_network %>%
   select(
-    `Plant species ID`,
-    `Pollinator species`,
-    `Number of visits`
+    plant_id,
+    pollinator_species,
+    visits
   ) %>%
   left_join(
     plant_nodes %>%
-      select(`Plant species ID`, x_plant, y_plant),
-    by = "Plant species ID"
+      select(plant_id, x_plant, y_plant),
+    by = "plant_id"
   ) %>%
   left_join(
     pollinator_nodes %>%
-      select(`Pollinator species`, x_pollinator, y_pollinator),
-    by = "Pollinator species"
+      select(
+        pollinator_species,
+        x_pollinator,
+        y_pollinator
+      ),
+    by = "pollinator_species"
   )
+
 
 # Plot the weighted bipartite network
 ggplot() +
@@ -204,20 +223,28 @@ ggplot() +
       y = y_plant,
       xend = x_pollinator,
       yend = y_pollinator,
-      linewidth = `Number of visits`
+      linewidth = visits
     ),
     colour = "grey60",
     alpha = 0.7
   ) +
   geom_point(
     data = plant_nodes,
-    aes(x = x_plant, y = y_plant, size= total_visits),
+    aes(
+      x = x_plant,
+      y = y_plant,
+      size = total_visits
+    ),
     colour = "forestgreen",
     show.legend = FALSE
   ) +
   geom_point(
     data = pollinator_nodes,
-    aes(x = x_pollinator, y = y_pollinator, size= total_visits),
+    aes(
+      x = x_pollinator,
+      y = y_pollinator,
+      size = total_visits
+    ),
     colour = "steelblue",
     show.legend = FALSE
   ) +
@@ -226,7 +253,7 @@ ggplot() +
     aes(
       x = x_plant,
       y = y_plant,
-      label = `Plant species ID`
+      label = plant_id
     ),
     angle = 90,
     hjust = 1.1,
@@ -237,7 +264,7 @@ ggplot() +
     aes(
       x = x_pollinator,
       y = y_pollinator,
-      label = `Pollinator species`
+      label = pollinator_species
     ),
     angle = 90,
     hjust = -0.1,
