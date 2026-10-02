@@ -4,7 +4,7 @@
 ############################################################
 
 # Dataset
-# - Source: Kaiser-Bunbury et al. (2017)
+# - Source: Kaiser-Bunbury et al. (2017); https://doi.org/10.1038/nature21071
 #   http://www.ecologia.ib.usp.br/iwdb/html/kaiser-bunbury_et_al_2017.html
 # - 64 monthly plant–pollinator interaction networks
 # - Mahé Island, Seychelles (September 2012–April 2013)
