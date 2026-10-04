@@ -12,7 +12,8 @@ install.packages(c(
   "remotes",
   "ggplot2",
   "viridis",
-  "tidyverse"))
+  "tidyverse",
+  "igraph"))
 
 # Install the version of bipartite used in this practical
 remotes::install_version(

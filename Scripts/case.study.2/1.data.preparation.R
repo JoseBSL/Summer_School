@@ -1,94 +1,103 @@
 ############################################################
 # Summer School: Network Analysis in R
-# Case Study 2: Species-habitat bipartite network (Balearic Islands)
+# Part 1: Prepare data for network analysis
 ############################################################
 
 # Dataset
-# - 15 commercially important / charismatic marine species and
-#   5 benthic habitat types of the Balearic Islands
-# - Edge weight = relative habitat affinity (1 = occasional, 5 = primary habitat)
-# - Data defined manually below (this exercise has no raw data file)
+# - Source: Kaiser-Bunbury et al. (2017); https://doi.org/10.1038/nature21071
+#   http://www.ecologia.ib.usp.br/iwdb/html/kaiser-bunbury_et_al_2017.html
+# - 64 monthly plant–pollinator interaction networks
+# - Mahé Island, Seychelles (September 2012–April 2013)
+# - Approximately 3 hours of sampling per network
 
 # ==========================================================
 # 1. Load libraries
 # ==========================================================
-library(dplyr)    # Data manipulation
-library(tidyr)    # Data reshaping
-library(tibble)   # tribble() and column_to_rownames()
-library(bipartite)  # Network analysis and visualization
-library(ggplot2)  # Data visualization
-library(viridis)  # Color scales for ggplot2
+library(readr)  # Read CSV files
+library(dplyr)  # Data manipulation
+library(tidyr)  # Data reshaping
 
 # ==========================================================
-# 2. Define species-habitat association data
+# 2. Load data
 # ==========================================================
+# Network data
+# it uses semicolon, so we use read_csv2 instead of read_csv
+networks = read_csv2("Data/Raw/visitation.networks.csv")
 
-species_habitat_long = tribble(
-  ~Species,                   ~Habitat,              ~Affinity,
-  # Dusky grouper: rocky and coralligenous (adults in caves/walls)
-  "Epinephelus marginatus",   "Rocky bottoms",        4,
-  "Epinephelus marginatus",   "Coralligenous",        3,
-  # Gilthead seabream: Posidonia (juveniles/feeding) and sandy bottoms
-  "Sparus aurata",            "Posidonia oceanica",   3,
-  "Sparus aurata",            "Sandy bottoms",        3,
-  # White seabream: Posidonia and rocky bottoms
-  "Diplodus sargus",          "Posidonia oceanica",   4,
-  "Diplodus sargus",          "Rocky bottoms",        2,
-  # Red mullet: sandy and rocky bottoms (forages on sediment)
-  "Mullus surmuletus",        "Sandy bottoms",        3,
-  "Mullus surmuletus",        "Rocky bottoms",        3,
-  # European seabass: sandy, Posidonia and rocky bottoms
-  "Dicentrarchus labrax",     "Sandy bottoms",        2,
-  "Dicentrarchus labrax",     "Posidonia oceanica",   3,
-  "Dicentrarchus labrax",     "Rocky bottoms",        3,
-  # Comber: rocky and coralligenous
-  "Serranus cabrilla",        "Rocky bottoms",        4,
-  "Serranus cabrilla",        "Coralligenous",        3,
-  # Red scorpionfish: rocky and coralligenous
-  "Scorpaena scrofa",         "Rocky bottoms",        4,
-  "Scorpaena scrofa",         "Coralligenous",        3,
-  # Atlantic bluefin tuna: pelagic, functionally linked to sandy/coastal passage
-  "Thunnus thynnus",          "Sandy bottoms",        2,
-  # Common octopus: rocky, sandy and coralligenous
-  "Octopus vulgaris",         "Rocky bottoms",        3,
-  "Octopus vulgaris",         "Sandy bottoms",        3,
-  "Octopus vulgaris",         "Coralligenous",        3,
-  # Common cuttlefish: Posidonia (egg-laying) and sandy bottoms
-  "Sepia officinalis",        "Posidonia oceanica",   5,
-  "Sepia officinalis",        "Sandy bottoms",        2,
-  # Spiny lobster: coralligenous and rocky bottoms
-  "Palinurus elephas",        "Coralligenous",        4,
-  "Palinurus elephas",        "Rocky bottoms",        3,
-  # European lobster: rocky bottoms and maerl
-  "Homarus gammarus",         "Rocky bottoms",        3,
-  "Homarus gammarus",         "Maerl",                4,
-  # Purple sea urchin: Posidonia and rocky bottoms
-  "Paracentrotus lividus",    "Posidonia oceanica",   4,
-  "Paracentrotus lividus",    "Rocky bottoms",        3,
-  # Noble pen shell: exclusively Posidonia (protected/charismatic)
-  "Pinna nobilis",            "Posidonia oceanica",   5,
-  # Short-snouted seahorse: Posidonia and maerl
-  "Hippocampus hippocampus",  "Posidonia oceanica",   4,
-  "Hippocampus hippocampus",  "Maerl",                3
-)
+# Species names
+plant.species = read_csv2("Data/Raw/plant.species.csv")
+pollinator.species = read_csv2("Data/Raw/pollinator.species.csv")
 
 # ==========================================================
-# 3. Convert the long-format data into an interaction matrix
+# 3. Replace plant species IDs with species names
 # ==========================================================
-
-species_habitat_matrix = species_habitat_long %>%
-  pivot_wider(
-    names_from = Habitat,
-    values_from = Affinity,
-    values_fill = 0
+networks = networks %>%
+  left_join(
+    plant.species %>%
+      select(`Plant species ID`, `Plant species name`),
+    by = "Plant species ID"
   ) %>%
-  column_to_rownames("Species") %>%
-  as.matrix()
+  mutate(`Plant species ID` = `Plant species name`)
+
+# Exclude records for which no plant species name was available
+networks = networks %>%
+  filter(!is.na(`Plant species ID`))
 
 # ==========================================================
-# 4. Save prepared data
+# 4. Replace pollinator species IDs with species names
+# ==========================================================
+# rename pollinator species names
+old_columns = tibble(`Pollinator species ID` = colnames(networks))
+
+# Match pollinator species IDs with their species names
+# coalesce() keeps the original column name when no match is found
+new_columns = old_columns %>%
+  left_join(
+    pollinator.species %>%
+      select(`Pollinator species ID`, `Pollinator species name`),
+    by = "Pollinator species ID") %>%
+  mutate(renamed.cols = coalesce(`Pollinator species name`, `Pollinator species ID`))
+# assign new column names to network data 
+colnames(networks) = new_columns$renamed.cols
+
+# ==========================================================
+# 5. Reshape network data to long format
 # ==========================================================
 
-saveRDS(
-  species_habitat_matrix,
-  "data/Processed/species_habitat_matrix.rds")
+metadata_columns = c(
+  "Treatment",
+  "Site",
+  "Month",
+  "Network ID",
+  "Plant species ID",
+  "Plant species name",
+  "Floral abundance")
+
+networks_long = networks %>%
+  pivot_longer(
+    cols = -all_of(metadata_columns),
+    names_to = "Pollinator species",
+    values_to = "Number of visits"
+  ) %>%
+  filter(`Number of visits` > 0)
+
+colnames(networks_long)
+
+names(networks_long) = c(
+  "treatment",
+  "site",
+  "month",
+  "network_id",
+  "plant_id",
+  "floral_abundance",
+  "plant_species",
+  "pollinator_species",
+  "visits")
+
+# ==========================================================
+# 6. Save data
+# ==========================================================
+
+write_csv2(
+  networks_long,
+  "Data/Processed/visitation.networks.long.csv")
