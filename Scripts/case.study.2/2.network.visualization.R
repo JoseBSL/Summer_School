@@ -110,21 +110,47 @@ plotweb(
 # 5. Plot the network as an interaction matrix
 # ==========================================================
 
-# Complete all plant-pollinator combinations
-example_network_complete = example_network %>%
-  complete(
-    plant_id,
-    pollinator_species,
-    fill = list(visits = 0)
+# ==========================================================
+# Plot an ordered interaction matrix
+# ==========================================================
+
+# Calculate plant degree
+plant_order = example_network_complete %>%
+  group_by(plant_id) %>%
+  summarise(
+    degree = sum(visits > 0, na.rm = TRUE),
+    .groups = "drop"
   ) %>%
+  arrange(desc(degree))
+
+
+# Calculate pollinator degree
+pollinator_order = example_network_complete %>%
+  group_by(pollinator_species) %>%
+  summarise(
+    degree = sum(visits > 0, na.rm = TRUE),
+    .groups = "drop"
+  ) %>%
+  arrange(desc(degree))
+
+
+# Order plants and pollinators by degree
+example_network_ordered = example_network_complete %>%
   mutate(
-    visits = na_if(visits, 0)
+    plant_id = factor(
+      plant_id,
+      levels = rev(plant_order$plant_id)
+    ),
+    pollinator_species = factor(
+      pollinator_species,
+      levels = pollinator_order$pollinator_species
+    )
   )
 
 
-# Plot the interaction matrix
+# Plot the ordered interaction matrix
 ggplot(
-  example_network_complete,
+  example_network_ordered,
   aes(
     x = pollinator_species,
     y = plant_id,
@@ -150,10 +176,7 @@ ggplot(
     axis.text.x = element_text(
       angle = 90,
       hjust = 1,
-      vjust = 0.5
-    )
-  )
-
+      vjust = 0.5))
 
 # ==========================================================
 # 6. Plot the weighted bipartite network using ggplot2

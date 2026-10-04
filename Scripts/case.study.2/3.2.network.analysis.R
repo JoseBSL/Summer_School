@@ -435,5 +435,5 @@ ggplot(
   ) +
   theme_bw() +
   theme(
-    legend.position = "none"
-  )
+    legend.position = "none")
+

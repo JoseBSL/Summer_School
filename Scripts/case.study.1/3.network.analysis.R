@@ -28,16 +28,58 @@ species_habitat_matrix = readRDS(
 # ==========================================================
 
 # Habitat degree = number of associated species
-habitat_degree <- colSums(species_habitat_matrix > 0)
+habitat_degree = colSums(species_habitat_matrix > 0)
 
 habitat_degree
 
+# Plot habitat degree
+habitat_degree %>%
+  enframe(
+    name = "Habitat",
+    value = "Degree"
+  ) %>%
+  ggplot(
+    aes(
+      x = reorder(Habitat, Degree),
+      y = Degree
+    )
+  ) +
+  geom_col(
+    fill = "steelblue3"
+  ) +
+  coord_flip() +
+  labs(
+    x = "Habitat",
+    y = "Degree"
+  ) +
+  theme_bw()
 
 # Species degree = number of habitats used
-species_degree <- rowSums(species_habitat_matrix > 0)
+species_degree = rowSums(species_habitat_matrix > 0)
 
 species_degree
 
+# Plot habitat degree
+species_degree %>%
+  enframe(
+    name = "Habitat",
+    value = "Degree"
+  ) %>%
+  ggplot(
+    aes(
+      x = reorder(Habitat, Degree),
+      y = Degree
+    )
+  ) +
+  geom_col(
+    fill = "steelblue3"
+  ) +
+  coord_flip() +
+  labs(
+    x = "Species",
+    y = "Degree"
+  ) +
+  theme_bw()
 
 # ==========================================================
 # 4. Connectance
@@ -55,35 +97,35 @@ species_degree
 
 
 # Number of realised links
-L <- sum(species_habitat_matrix > 0)
+L = sum(species_habitat_matrix > 0)
 
 L
 
 
 # Number of species
-P <- nrow(species_habitat_matrix)
+P = nrow(species_habitat_matrix)
 
 P
 
 
 # Number of habitats
-H <- ncol(species_habitat_matrix)
+H = ncol(species_habitat_matrix)
 
 H
 
 
 # Number of possible links
-possible_links <- P * H
+possible_links = P * H
 
 possible_links
 
 
 # Connectance
-connectance_manual <- L / possible_links
+connectance_manual = L / possible_links
 
 connectance_manual
 
-network_connectance <- networklevel(
+network_connectance = networklevel(
   species_habitat_matrix,
   index = "connectance")
 
@@ -102,13 +144,31 @@ network_connectance
 
 # Degree, betweenness and closeness for each species and habitat
 
-network_centrality <- specieslevel(
+network_centrality = specieslevel(
   species_habitat_matrix,
   index = c(
     "degree",
     "betweenness"),
   level = "both")
 
+
+# Plot species degree
+ggplot(
+  species_centrality,
+  aes(
+    x = reorder(Species, betweenness),
+    y = betweenness
+  )
+) +
+  geom_col(
+    fill = "darkorange2"
+  ) +
+  coord_flip() +
+  labs(
+    x = "Species",
+    y = "Degree"
+  ) +
+  theme_bw()
 
 # Species centrality
 species_centrality = network_centrality[["lower level"]] %>%
@@ -119,8 +179,27 @@ species_centrality = network_centrality[["lower level"]] %>%
 species_centrality
 
 
+# Plot species degree
+ggplot(
+  species_centrality,
+  aes(
+    x = reorder(Species, weighted.betweenness),
+    y = weighted.betweenness
+  )
+) +
+  geom_col(
+    fill = "darkorange2"
+  ) +
+  coord_flip() +
+  labs(
+    x = "Species",
+    y = "Degree"
+  ) +
+  theme_bw()
+
+
 # Habitat centrality
-habitat_centrality <- network_centrality[["higher level"]] %>%
+habitat_centrality = network_centrality[["higher level"]] %>%
   rownames_to_column("Habitat") %>%
   as_tibble() %>%
   arrange(desc(degree))
@@ -144,13 +223,13 @@ habitat_centrality
 # Identify groups of species and habitats that interact more
 # strongly with each other than with the rest of the network
 
-modules <- computeModules(
+modules = computeModules(
   species_habitat_matrix
 )
 
 
 # Modularity score
-modularity_Q <- modules@likelihood
+modularity_Q = modules@likelihood
 
 modularity_Q
 
@@ -174,7 +253,7 @@ plotModuleWeb(modules)
 
 
 # Function to classify network roles
-classify_role <- function(z, c) {
+classify_role = function(z, c) {
   case_when(
     z > 2.5 & c > 0.62 ~ "Network hub",
     z > 2.5 ~ "Module hub",
@@ -185,7 +264,7 @@ classify_role <- function(z, c) {
 
 
 # Species roles
-species_roles <- czvalues(
+species_roles = czvalues(
   modules,
   weighted = TRUE,
   level = "lower"
@@ -206,7 +285,7 @@ species_roles
 
 
 # Habitat roles
-habitat_roles <- czvalues(
+habitat_roles = czvalues(
   modules,
   weighted = TRUE,
   level = "higher"
