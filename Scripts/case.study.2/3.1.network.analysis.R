@@ -344,11 +344,10 @@ ggplot(
 # Calculate nestedness
 network_nestedness = networklevel(
   example_matrix,
-  index = "nestedness"
+  index = "NODF"
 )
 
 network_nestedness
-
 
 # ==========================================================
 # 10. Modularity
