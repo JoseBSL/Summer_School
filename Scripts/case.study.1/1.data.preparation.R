@@ -15,9 +15,6 @@
 library(dplyr)    # Data manipulation
 library(tidyr)    # Data reshaping
 library(tibble)   # tribble() and column_to_rownames()
-library(bipartite)  # Network analysis and visualization
-library(ggplot2)  # Data visualization
-library(viridis)  # Color scales for ggplot2
 
 # ==========================================================
 # 2. Define species-habitat association data

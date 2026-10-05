@@ -33,9 +33,7 @@ species_habitat_matrix = readRDS(
 
 # Create an unweighted interaction matrix
 species_habitat_matrix_binary = species_habitat_matrix
-species_habitat_matrix_binary[
-  species_habitat_matrix_binary > 0
-] = 1
+species_habitat_matrix_binary[species_habitat_matrix_binary > 0] = 1
 
 
 # Unweighted network
@@ -90,13 +88,11 @@ species_nodes = species_habitat_long %>%
   group_by(Species) %>%
   summarise(
     total_affinity = sum(Affinity),
-    .groups = "drop"
-  ) %>%
+    .groups = "drop") %>%
   arrange(desc(total_affinity)) %>%
   mutate(
     x_species = seq_along(Species),
-    y_species = 0
-  )
+    y_species = 0)
 
 
 # Order habitats by their total affinity
@@ -111,10 +107,8 @@ habitat_nodes = species_habitat_long %>%
     x_habitat = seq(
       1,
       nrow(species_nodes),
-      length.out = n()
-    ),
-    y_habitat = 1
-  )
+      length.out = n()),
+    y_habitat = 1)
 
 
 # Add node coordinates to each interaction
@@ -134,10 +128,8 @@ network_edges = species_habitat_long %>%
       select(
         Habitat,
         x_habitat,
-        y_habitat
-      ),
-    by = "Habitat"
-  )
+        y_habitat),
+    by = "Habitat")
 
 
 # Plot the weighted bipartite network
@@ -149,65 +141,52 @@ ggplot() +
       y = y_species,
       xend = x_habitat,
       yend = y_habitat,
-      linewidth = Affinity
-    ),
+      linewidth = Affinity),
     colour = "grey60",
-    alpha = 0.7
-  ) +
+    alpha = 0.7) +
   geom_point(
     data = species_nodes,
     aes(
       x = x_species,
       y = y_species,
-      size = total_affinity
-    ),
+      size = total_affinity),
     colour = "darkorange2",
-    show.legend = FALSE
-  ) +
+    show.legend = FALSE) +
   geom_point(
     data = habitat_nodes,
     aes(
       x = x_habitat,
       y = y_habitat,
-      size = total_affinity
-    ),
+      size = total_affinity),
     colour = "steelblue3",
-    show.legend = FALSE
-  ) +
+    show.legend = FALSE) +
   geom_text(
     data = species_nodes,
     aes(
       x = x_species,
       y = y_species,
-      label = Species
-    ),
+      label = Species),
     angle = 90,
     hjust = 1.1,
-    size = 3
-  ) +
+    size = 3) +
   geom_text(
     data = habitat_nodes,
     aes(
       x = x_habitat,
       y = y_habitat,
-      label = Habitat
-    ),
+      label = Habitat),
     angle = 90,
     hjust = -0.1,
-    size = 3
-  ) +
+    size = 3) +
   scale_linewidth_continuous(
     name = "Habitat affinity",
-    range = c(0.2, 3)
-  ) +
+    range = c(0.2, 3)) +
   coord_cartesian(
     ylim = c(-0.35, 1.35),
-    clip = "off"
-  ) +
+    clip = "off") +
   labs(
     x = NULL,
-    y = NULL
-  ) +
+    y = NULL) +
   theme_void() +
   theme(
     legend.position = "right",
@@ -224,22 +203,17 @@ ggplot(
   aes(
     x = Habitat,
     y = Species,
-    fill = Affinity
-  )
-) +
+    fill = Affinity)) +
   geom_tile(
     colour = "grey70",
-    linewidth = 0.2
-  ) +
+    linewidth = 0.2) +
   scale_fill_viridis_c(
     na.value = "white",
-    name = "Habitat\naffinity"
-  ) +
+    name = "Habitat\naffinity") +
   coord_equal() +
   labs(
     x = "Habitat",
-    y = "Species"
-  ) +
+    y = "Species") +
   theme_bw() +
   theme(
     panel.grid = element_blank(),
@@ -256,15 +230,13 @@ ggplot(
 # Convert the interaction matrix to an igraph object
 network_graph = graph_from_incidence_matrix(
   species_habitat_matrix,
-  weighted = TRUE
-)
+  weighted = TRUE)
 
 
 # Calculate a force-directed layout
 network_layout = layout_with_fr(
   network_graph,
-  weights = E(network_graph)$weight
-)
+  weights = E(network_graph)$weight)
 
 
 # Create node data
@@ -273,18 +245,15 @@ network_nodes = tibble(
   type = ifelse(
     V(network_graph)$type,
     "Habitat",
-    "Species"
-  ),
+    "Species"),
   x = network_layout[, 1],
-  y = network_layout[, 2]
-)
+  y = network_layout[, 2])
 
 
 # Create edge data
 network_edges = as_data_frame(
   network_graph,
-  what = "edges"
-) %>%
+  what = "edges") %>%
   left_join(
     network_nodes %>%
       select(
@@ -292,17 +261,14 @@ network_edges = as_data_frame(
         x_from = x,
         y_from = y
       ),
-    by = "from"
-  ) %>%
+    by = "from") %>%
   left_join(
     network_nodes %>%
       select(
         to = node,
         x_to = x,
-        y_to = y
-      ),
-    by = "to"
-  )
+        y_to = y),
+    by = "to")
 
 
 # Plot
@@ -314,50 +280,38 @@ ggplot() +
       y = y_from,
       xend = x_to,
       yend = y_to,
-      linewidth = weight
-    ),
+      linewidth = weight),
     colour = "grey70",
-    alpha = 0.7
-  ) +
+    alpha = 0.7) +
   geom_point(
     data = network_nodes,
     aes(
       x = x,
       y = y,
-      colour = type
-    ),
-    size = 5
-  ) +
+      colour = type),
+    size = 5) +
   geom_text(
     data = network_nodes,
     aes(
       x = x,
       y = y,
-      label = node
-    ),
+      label = node),
     nudge_y = 0.15,
-    size = 3
-  ) +
+    size = 3) +
   scale_colour_manual(
     values = c(
       "Species" = "darkorange2",
-      "Habitat" = "steelblue3"
-    )
-  ) +
+      "Habitat" = "steelblue3")) +
   scale_linewidth_continuous(
     name = "Habitat affinity",
-    range = c(0.2, 3)
-  ) +
+    range = c(0.2, 3)) +
   coord_equal(
-    clip = "off"
-  ) +
+    clip = "off") +
   labs(
     colour = NULL,
     x = NULL,
-    y = NULL
-  ) +
+    y = NULL) +
   theme_void() +
   theme(
-    legend.position = "right"
-  )
+    legend.position = "right")
 
