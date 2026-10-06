@@ -50,7 +50,10 @@ habitat_degree %>%
   labs(
     x = "Habitat",
     y = "Degree") +
-  theme_bw()
+  theme_bw() +
+  scale_y_continuous(
+    breaks = scales::breaks_width(1)
+  )
 
 # Species degree = number of habitats used
 species_degree = rowSums(species_habitat_matrix > 0)
@@ -233,99 +236,5 @@ modularity_Q
 
 # Visualise modules
 plotModuleWeb(modules)
-
-
-# ==========================================================
-# 7. Module roles
-# ==========================================================
-
-# z = within-module degree
-#     How strongly connected is a species within its own module,
-#     relative to other species in that module?
-#
-#     z = (k_within - mean(k_within)) / sd(k_within)
-#
-#     Low z  = few/weak connections within its module relative to other species
-#     High z = many/strong connections within its module relative to other species
-#
-# z can be negative or positive:
-#   z < 0 = below-average connectivity within its module
-#   z > 0 = above-average connectivity within its module
-#
-# c = among-module connectivity
-#     How evenly are a species' interactions distributed
-#     across different modules?
-#
-#     c = 1 - sum((k_module / k_total)^2)
-#
-# c ranges from 0 towards 1:
-#     Low c  = interactions concentrated within one module
-#     High c = interactions distributed across several modules
-
-# ==========================================================
-# Species roles
-# ==========================================================
-
-# Calculate c and z
-species_cz = czvalues(
-  modules,
-  weighted = TRUE,
-  level = "lower")
-
-# Put c and z into a data frame
-species_roles = tibble(
-  Species = names(species_cz$c),
-  c = species_cz$c,
-  z = species_cz$z)
-
-# Classify species according to their network role
-species_roles = species_roles %>%
-  mutate(
-    role = case_when(
-      z > 2.5 & c > 0.62 ~ "Network hub",
-      z > 2.5             ~ "Module hub",
-      c > 0.62            ~ "Connector",
-      TRUE                ~ "Peripheral"
-    )
-  )
-
-species_roles
-
-
-# ==========================================================
-# Habitat roles
-# ==========================================================
-
-# Calculate c and z
-habitat_cz = czvalues(
-  modules,
-  weighted = TRUE,
-  level = "higher")
-
-# Put c and z into a data frame
-habitat_roles = tibble(
-  Habitat = names(habitat_cz$c),
-  c = habitat_cz$c,
-  z = habitat_cz$z)
-
-# Classify habitats according to their network role
-habitat_roles = habitat_roles %>%
-  mutate(
-    role = case_when(
-      is.na(z)                  ~ "Undefined",
-      z > 2.5  & c > 0.62      ~ "Network hub",
-      z > 2.5  & c <= 0.62     ~ "Module hub",
-      z <= 2.5 & c > 0.62      ~ "Connector",
-      z <= 2.5 & c <= 0.62     ~ "Peripheral"
-    )
-  )
-
-habitat_roles
-
-
-
-
-
-
 
 

@@ -1,7 +1,7 @@
 ############################################################
 # Summer School: Network Analysis in R
-# Case Study 2: Species-habitat bipartite network
-# Plot network modules using ggplot2
+# Case Study 1: Species-habitat bipartite network
+# Network modularity
 ############################################################
 
 
@@ -21,17 +21,19 @@ library(ggplot2)
 # ==========================================================
 
 species_habitat_matrix = readRDS(
-  "data/Processed/species_habitat_matrix.rds"
-)
+  "data/Processed/species_habitat_matrix.rds")
 
 
 # ==========================================================
 # 3. Detect modules
 # ==========================================================
 
+# Identify groups of species and habitats that interact more
+# strongly with each other than with the rest of the network
+
 modules = computeModules(
-  species_habitat_matrix
-)
+  species_habitat_matrix)
+
 
 # Modularity
 modularity_Q = modules@likelihood
@@ -40,10 +42,11 @@ modularity_Q
 
 
 # ==========================================================
-# 4. Extract module information
+# 4. Explore module composition
 # ==========================================================
 
-module_info = listModuleInformation(modules)
+module_info = listModuleInformation(
+  modules)
 
 # Extract detected modules
 detected_modules = module_info[[2]]
@@ -51,12 +54,12 @@ detected_modules = module_info[[2]]
 # Number of modules
 length(detected_modules)
 
-# Show module composition
+# Species and habitats belonging to each module
 detected_modules
 
 
 # ==========================================================
-# 5. Create module tables
+# 5. Extract module membership
 # ==========================================================
 
 # Species and their assigned module
@@ -65,7 +68,7 @@ species_modules = lapply(
   function(i) {
     tibble(
       Species = detected_modules[[i]][[1]],
-      species_module = i
+      Module = i
     )
   }
 ) %>%
@@ -80,7 +83,7 @@ habitat_modules = lapply(
   function(i) {
     tibble(
       Habitat = detected_modules[[i]][[2]],
-      habitat_module = i
+      Module = i
     )
   }
 ) %>%
@@ -90,21 +93,21 @@ habitat_modules
 
 
 # ==========================================================
-# 6. Create node positions
+# 6. Define node positions
 # ==========================================================
 
-# Species
+# Species are arranged by module
 species_nodes = species_modules %>%
-  arrange(species_module) %>%
+  arrange(Module) %>%
   mutate(
     x_species = seq_along(Species),
     y_species = 0
   )
 
 
-# Habitats
+# Habitats are arranged by module
 habitat_nodes = habitat_modules %>%
-  arrange(habitat_module) %>%
+  arrange(Module) %>%
   mutate(
     x_habitat = seq(
       1,
@@ -116,10 +119,9 @@ habitat_nodes = habitat_modules %>%
 
 
 # ==========================================================
-# 7. Prepare links
+# 7. Prepare interactions
 # ==========================================================
 
-# Convert the interaction matrix to long format
 network_edges = species_habitat_matrix %>%
   as.data.frame() %>%
   rownames_to_column("Species") %>%
@@ -128,7 +130,9 @@ network_edges = species_habitat_matrix %>%
     names_to = "Habitat",
     values_to = "Affinity"
   ) %>%
-  filter(Affinity > 0) %>%
+  filter(
+    Affinity > 0
+  ) %>%
   left_join(
     species_nodes,
     by = "Species"
@@ -140,10 +144,10 @@ network_edges = species_habitat_matrix %>%
 
 
 # ==========================================================
-# 8. Plot modules
+# 8. Visualise modules
 # ==========================================================
 
-ggplot() +
+module_plot = ggplot() +
   
   # Interactions
   geom_segment(
@@ -165,7 +169,7 @@ ggplot() +
     aes(
       x = x_species,
       y = y_species,
-      colour = factor(species_module)
+      colour = factor(Module)
     ),
     size = 4
   ) +
@@ -176,7 +180,7 @@ ggplot() +
     aes(
       x = x_habitat,
       y = y_habitat,
-      colour = factor(habitat_module)
+      colour = factor(Module)
     ),
     size = 6
   ) +
@@ -228,5 +232,9 @@ ggplot() +
   
   theme(
     legend.position = "right",
-    plot.margin = margin(80, 60, 80, 60)
+    plot.margin = margin(
+      80, 60, 80, 60
+    )
   )
+
+module_plot

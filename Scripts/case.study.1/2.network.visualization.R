@@ -23,8 +23,7 @@ library(igraph)
 # ==========================================================
 
 species_habitat_matrix = readRDS(
-  "data/Processed/species_habitat_matrix.rds"
-)
+  "data/Processed/species_habitat_matrix.rds")
 
 
 # ==========================================================
@@ -47,8 +46,7 @@ plotweb(
   text_size = 0.4,
   srt = 1,
   lab_distance = 0.01,
-  mar = c(1, 1, 1, 1)
-)
+  mar = c(1, 1, 1, 1))
 
 
 # Weighted network
@@ -198,6 +196,10 @@ ggplot() +
 # 6. Plot the network as an interaction matrix
 # ==========================================================
 
+# bipartite way
+visweb(species_habitat_matrix)
+
+# ggplot 
 ggplot(
   species_habitat_long,
   aes(
