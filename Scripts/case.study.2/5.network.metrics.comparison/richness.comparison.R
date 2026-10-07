@@ -44,15 +44,10 @@ site_richness
 # 4. Compare plant richness between treatments
 # ==========================================================
 
-# Summarise plant richness by treatment
-plant_richness_summary = site_richness %>%
-  group_by(treatment) %>%
-  summarise(
-    mean_richness = mean(plant_richness),
-    sd_richness = sd(plant_richness),
-    .groups = "drop")
-
-plant_richness_summary
+treatment_colours = c(
+  "Restored" = "#3A923A",
+  "Unrestored" = "#595959"
+)
 
 
 # Plot plant richness
@@ -64,21 +59,19 @@ plot_plant_richness = ggplot(
   geom_boxplot(
     aes(fill = treatment),
     width = 0.5,
+    colour = "white",
     outlier.shape = NA,
-    alpha = 0.4) +
+    alpha = 1) +
   geom_jitter(
-    aes(colour = treatment),
+    aes(fill = treatment),
+    shape = 21,
+    colour = "white",
+    stroke = 0.7,
     width = 0.08,
     size = 4,
-    alpha = 0.4) +
+    alpha = 1) +
   scale_fill_manual(
-    values = c(
-      "Restored" = "#3A923A",
-      "Unrestored" = "#595959")) +
-  scale_colour_manual(
-    values = c(
-      "Restored" = "#3A923A",
-      "Unrestored" = "#595959")) +
+    values = treatment_colours) +
   labs(
     x = "Treatment",
     y = "Plant richness") +
@@ -95,23 +88,13 @@ plant_richness_model = lm(
   data = site_richness)
 
 summary(plant_richness_model)
+
 anova(plant_richness_model)
 
 
 # ==========================================================
 # 5. Compare pollinator richness between treatments
 # ==========================================================
-
-# Summarise pollinator richness by treatment
-pollinator_richness_summary = site_richness %>%
-  group_by(treatment) %>%
-  summarise(
-    mean_richness = mean(pollinator_richness),
-    sd_richness = sd(pollinator_richness),
-    .groups = "drop")
-
-pollinator_richness_summary
-
 
 # Plot pollinator richness
 plot_pollinator_richness = ggplot(
@@ -122,21 +105,19 @@ plot_pollinator_richness = ggplot(
   geom_boxplot(
     aes(fill = treatment),
     width = 0.5,
+    colour = "white",
     outlier.shape = NA,
-    alpha = 0.4) +
+    alpha = 1) +
   geom_jitter(
-    aes(colour = treatment),
+    aes(fill = treatment),
+    shape = 21,
+    colour = "white",
+    stroke = 0.7,
     width = 0.08,
     size = 4,
-    alpha = 0.4) +
+    alpha = 1) +
   scale_fill_manual(
-    values = c(
-      "Restored" = "#3A923A",
-      "Unrestored" = "#595959")) +
-  scale_colour_manual(
-    values = c(
-      "Restored" = "#3A923A",
-      "Unrestored" = "#595959")) +
+    values = treatment_colours) +
   labs(
     x = "Treatment",
     y = "Pollinator richness") +
@@ -153,4 +134,6 @@ pollinator_richness_model = lm(
   data = site_richness)
 
 summary(pollinator_richness_model)
+
 anova(pollinator_richness_model)
+
